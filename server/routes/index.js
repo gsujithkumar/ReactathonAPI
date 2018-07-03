@@ -89,6 +89,65 @@ router.get('/api/v1/getjddetailsbyid/:jobid', (req, res, next) => {
 });
 
 
+router.get('/api/v1/getcandidatedetailsbyid/:id', (req, res, next) => {
+  const results = [];
+  // Get a Postgres client from the connection pool
+  pg.connect(connectionString, (err, client, done) => {
+    // Handle connection errors
+    if(err) {
+      done();
+      console.log(err);
+      return res.status(500).json({success: false, data: err});
+    }
+    const id = req.params.id;
+    const query2 = {
+      text: 'SELECT applicationid, candidateid, jobid, applicationdate, candidatestatus, isapplicationshortlisted, isfinalized, comments FROM job.tblapplications WHERE candidateid = $1;',
+      values: [id]
+    }
+    // SQL Query > Select Data
+    const query = client.query(query2);
+    // Stream results back one row at a time
+    query.on('row', (row) => {
+      results.push(row);
+    });
+    // After all data is returned, close connection and return results
+    query.on('end', () => {
+      done();
+      return res.json(results);
+    });
+  });
+});
+
+router.get('/api/v1/getinterviewscheduledetailsbyid/:id', (req, res, next) => {
+  const results = [];
+  // Get a Postgres client from the connection pool
+  pg.connect(connectionString, (err, client, done) => {
+    // Handle connection errors
+    if(err) {
+      done();
+      console.log(err);
+      return res.status(500).json({success: false, data: err});
+    }
+    const id = req.params.id;
+    const query2 = {
+      text: 'SELECT candidateid, interviewdate, roundnumber, interviewerid, feedback, isshortlisted FROM job.tblinterviewschedule WHERE candidateid = $1;',
+      values: [id]
+    }
+    // SQL Query > Select Data
+    const query = client.query(query2);
+    // Stream results back one row at a time
+    query.on('row', (row) => {
+      results.push(row);
+    });
+    // After all data is returned, close connection and return results
+    query.on('end', () => {
+      done();
+      return res.json(results);
+    });
+  });
+});
+
+
 router.post('/api/v1/todos', (req, res, next) => {
   const results = [];
   // Grab data from http request
